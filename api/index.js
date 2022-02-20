@@ -1,3 +1,6 @@
+// Name: index.js
+// Desc: Contains database requests for Master CS
+
 var express = require('express');
 var router = express.Router();
 var mysql = require('../config/config');
@@ -20,9 +23,9 @@ router.get('/event', function (req, res) {
 
 });
 
-router.get('/course', function (req, res) {
+router.get('/user', function (req, res) {
 
-  mysql.query("SELECT * FROM Course", function (err, rows) {
+  mysql.query("SELECT * FROM User", function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
