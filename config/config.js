@@ -1,3 +1,5 @@
+// Configuration for database. This is what connects us to our database.
+
 var mysql = require('mysql');
 
 var connection = mysql.createPool({
