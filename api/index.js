@@ -23,6 +23,35 @@ router.get('/event', function (req, res) {
 
 });
 
+// Post to Event
+router.post('/event', function requestHandler(req,res) {
+  mysql.query("INSERT INTO Event (EventTitle, EventDescription, EventInstructor, EventSpots) VALUES (?,?,?,?)", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots ], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+
+  });
+})
+
+// Delete Event
+router.delete('/event', function requestHandler(req,res) {
+  mysql.query("DELETE FROM Event WHERE EventID = ? ", [req.body.EventID], function (err, rows, fields){
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+})
+
 // Access User Table
 router.get('/user', function (req, res) {
 
@@ -107,6 +136,38 @@ router.get('/VideoCompletion', function (req, res) {
   });
 
 });
+
+// // // Table used for testing purposes only
+// router.get('/test', function (req, res) {
+
+//   mysql.query("SELECT * FROM Test", function (err, rows) {
+//     if(err) {
+//       res.status(500).send(err);
+//       return;
+//     }
+
+//     if(rows) {
+//       res.status(200).send(rows);
+//     }
+
+//   });
+
+// });
+
+// // Post to Test
+// router.post('/test', function requestHandler(req,res) {
+//   mysql.query("INSERT INTO Test (TestSentence) VALUES (?)", [req.body.TestSentence], function (err, rows, fields) {
+//     if(err) {
+//       res.status(500).send(err);
+//       return;
+//     }
+
+//     if(rows) {
+//       res.status(200).send({message:"success"});
+//     }
+
+//   });
+// })
 
 
 module.exports = router;
