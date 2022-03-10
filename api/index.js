@@ -27,22 +27,25 @@ router.get('/event', function (req, res) {
 
 // Post to Event
 router.post('/event', function requestHandler(req,res) {
-  mysql.query("INSERT INTO Event (EventTitle, EventDescription, EventInstructor, EventSpots) VALUES (?,?,?,?)", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots ], function (err, rows, fields) {
+  mysql.query("INSERT INTO Event (EventTitle, EventDescription, EventInstructor, EventSpots, EventDate) VALUES (?,?,?,?,?)", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots, req.body.EventDate ], function (err, rows, fields) {
     if(err) {
       res.status(500).send(err);
       return;
     }
 
     if(rows) {
-      res.status(200).send({message:"success"});
+      res.status(200).send(rows);
     }
 
   });
 })
 
 // Delete Event
-router.delete('/event', function requestHandler(req,res) {
-  mysql.query("DELETE FROM Event WHERE EventID = ? ", [req.body.EventID], function (err, rows, fields){
+router.delete('/event/:EventID', function requestHandler(req,res) {
+
+  console.log(`Deleting event with ID ${req.params.EventID}`)
+  mysql.query("DELETE FROM Event WHERE EventID = ? ", [req.params.EventID], function (err, rows, fields){
+
     if(err) {
       res.status(500).send(err);
       return;
@@ -52,6 +55,7 @@ router.delete('/event', function requestHandler(req,res) {
       res.status(200).send({message:"success"});
     }
   });
+
 })
 
 // Access User Table
