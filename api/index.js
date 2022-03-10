@@ -73,18 +73,18 @@ router.get('/user', function (req, res) {
 
 router.post('/userpost', function (req , res) {
 
+  //let firstname;
   let record = {
-    /*let firstname = req.body.FirstName
-
-  let lastname = req.body.LastName;
-  let role = req.body.Role;
-  let Username = req.body.username;
-  let Password = req.body.password;*/
-    firstname : 'Sam',
+    firstname : req.body.FirstName,
+    lastname : req.body.LastName,
+    //role : req.body.Role,
+    Username : req.body.username,
+    Password : req.body.password
+    /*firstname : 'Sam',
     lastname : 'Smith',
     role : 'Student',
-    Username : 'samsmith@email.com',
-    Password : 'password'
+    Username : 'johnsmith@email.com',
+    Password : 'password'*/
   };
 
   /*mysql.query("INSERT INTO `User`(`UserID`, `FirstName`, `LastName`, `Role`, `username`, `password`, `BadgeGiven`, `LessonsTaken`, `CoursesTaken`, `QuizesTaken`, `Streaks`, `Points`) VALUES ('firstname',$firstname,'[value-3]','[value-4]','[value-5]','[value-6]','[value-7]','[value-8]','[value-9]','[value-10]','[value-11]','[value-12]')", function (err, rows) {
@@ -104,6 +104,20 @@ router.post('/userpost', function (req , res) {
   });
 
 });
+
+/*router.post('/user', function requestHandler(req,res) {
+  mysql.query("INSERT INTO User (FirstName, LastName, username, password) VALUES (?,?,?,?)", [req.body.FirstName, req.body.LastName, req.body.username, req.body.password ], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+
+  });
+})*/
 
 //Access Achievements Table
 router.get('/achievements', function (req, res) {
