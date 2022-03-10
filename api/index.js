@@ -191,6 +191,23 @@ router.get('/VideoCompletion', function (req, res) {
 
 });
 
+//Access User Events Table
+router.get('/UserEvents', function (req, res) {
+
+  mysql.query("SELECT * FROM UserEvents", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
 // // // Table used for testing purposes only
 // router.get('/test', function (req, res) {
 
