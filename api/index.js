@@ -7,7 +7,7 @@ var mysql = require('../config/config');
 
 router.use(express.json());
 
-// Acces Events Table
+// Access Events Table
 router.get('/event', function (req, res) {
     // res.status(200).send({"Success": "Base API"});
 
@@ -139,6 +139,22 @@ router.get('/achievements', function (req, res) {
   });
 
 });
+
+// Post to Achievments Table
+router.post('/achievements', function requestHandler(req,res) {
+  mysql.query("INSERT INTO Achievements (AchievementDescription, AchievementTitle) VALUES (?,?,?,?,?)", [req.body.AchievementTitle, req.body.AchievementDescription], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+})
+
 
 // Access Course Completion
 router.get('/CourseCompletion', function (req, res) {
