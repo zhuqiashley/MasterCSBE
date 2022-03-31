@@ -142,7 +142,7 @@ router.get('/achievements', function (req, res) {
 
 // Post to Achievments Table
 router.post('/achievements', function requestHandler(req,res) {
-  mysql.query("INSERT INTO Achievements (BadgeID, AchievementDescription, AchievementTitle) VALUES (?,?,?)", [req.BadgeID, req.AchievementTitle, req.AchievementDescription], function (err, rows) {
+  mysql.query("INSERT INTO Achievements (BadgeID, AchievementTitle, AchievementDescription, AchievmentImage) VALUES (?,?,?, ?)", [req.BadgeID, req.AchievementTitle, req.AchievementDescription, req.AchivementImage], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
