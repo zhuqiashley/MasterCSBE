@@ -241,4 +241,121 @@ router.get('/UserEvents', function (req, res) {
 // })
 
 
+router.get('/Ctest', function (req, res) {
+  let params = req.query
+  let addSql = 'INSERT INTO QuizAnswers(UserID,QuizID,Answer) VALUES(?,?,?)'
+  let addSqlParams = [1, 1, 1];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          console.log('[INSERT ERROR] - ', err.message);
+          return;
+      }
+      console.log('INSERT ID:', result);
+  });
+  res.send('Hello')
+});
+
+router.get('/ChapterInfo', function (req, res) {
+  mysql.query("SELECT * FROM ChapterInfo WHERE CourseID = " + req.query.CourseID, function (err, rows) {
+      if (err) {
+          res.status(500).send(err);
+      }
+      if (rows) {
+          res.status(200).send(rows);
+      }
+  });
+});
+
+router.get('/CourseQuizzes', function (req, res) {
+  mysql.query("SELECT * FROM CourseQuizzes", function (err, rows) {
+      if (err) {
+          res.status(500).send(err);
+      }
+      if (rows) {
+          res.status(200).send(rows);
+      }
+  });
+});
+
+router.get('/QuizAnswers', function (req, res) {
+  mysql.query("SELECT * FROM QuizAnswers", function (err, rows) {
+      if (err) {
+          res.status(500).send(err);
+      }
+      if (rows) {
+          res.status(200).send(rows);
+      }
+  });
+});
+
+router.get('/QuizScores', function (req, res) {
+  mysql.query("SELECT * FROM QuizScores", function (err, rows) {
+      if (err) {
+          res.status(500).send(err);
+      }
+      if (rows) {
+          res.status(200).send(rows);
+      }
+  });
+});
+router.get('/IntroQuiz', function (req, res) {
+  mysql.query("SELECT * FROM IntroQuiz", function (err, rows) {
+      if (err) {
+          res.status(500).send(err);
+      }
+      if (rows) {
+          res.status(200).send(rows);
+      }
+  });
+});
+
+router.get('/IntroQuizResult', function (req, res) {
+  mysql.query("SELECT * FROM IntroQuizResult", function (err, rows) {
+      if (err) {
+          res.status(500).send(err);
+      }
+      if (rows) {
+          res.status(200).send(rows);
+      }
+  });
+});
+
+router.get('/updateIntroQuizResult', function (req, res) {
+  let params = req.query
+  let addSql = 'REPLACE INTO IntroQuizResult(UserID,TypeOfLearner,CourseRecommended) VALUES(?,?,?)'
+  let addSqlParams = [params.id, params.type, params.recommended];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      res.send(result)
+  });
+});
+
+router.get('/getCourseQuizzes', function (req, res) {
+  let params = req.query
+  let Sql = 'SELECT * FROM CourseQuizzes WHERE CourseID = ' + params.CourseID + ' AND ChapterID = ' + params.ChapterID
+  mysql.query(Sql, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      res.send(result)
+  });
+});
+
+router.get('/updateQuizScores', function (req, res) {
+  let params = req.query
+  let addSql = 'REPLACE INTO QuizScores(UserID,ChapterID,Score) VALUES(?,?,?)'
+  let addSqlParams = [params.UserID, params.ChapterID, params.Score];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      res.send(result)
+  });
+});
+
 module.exports = router;
