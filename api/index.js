@@ -1,5 +1,6 @@
 // Name: index.js
 // Desc: Contains database requests for Master CS
+// eslint-disable-next-line no-unused-vars
 
 var express = require('express');
 var router = express.Router();
@@ -25,9 +26,138 @@ router.get('/event', function (req, res) {
 
 });
 
+router.get('/getcourses/:Course', function (req, res) {
+  // res.status(200).send({"Success": "Base API"});
+
+  mysql.query("SELECT * FROM courses WHERE title = ?",[req.params.Course], function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+router.get('/getAllcourses', function (req, res) {
+  // res.status(200).send({"Success": "Base API"});
+
+  mysql.query("SELECT * FROM courses", function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+router.get('/getCourseData/:courseID', function (req, res) {
+  // res.status(200).send({"Success": "Base API"});
+
+  mysql.query("SELECT course_id, course_completion FROM courseEnrollData where user_id =1 and course_id = ?",[req.params.courseID], function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+
+router.get('/getForumData/:courseID', function (req, res) {
+  // res.status(200).send({"Success": "Base API"});
+
+  mysql.query("SELECT question, comments, comment_count, like_count, posted_on, views_count, forum_src FROM Forum where user_id =1 and course_id = ?",[req.params.courseID], function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+router.get('/getUserData', function (req, res) {
+  mysql.query("SELECT * FROM User where userId =1", function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+router.get('/getUserEnrolledCourses/:userId', function (req, res) {
+  mysql.query("SELECT * FROM courses INNER JOIN courseEnrollData ON courses.id=courseEnrollData.course_id where courseEnrollData.user_id =?",[req.params.userId], function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+
 // Post to Event
 router.post('/event', function requestHandler(req,res) {
   mysql.query("INSERT INTO Event (EventTitle, EventDescription, EventInstructor, EventSpots, EventDate) VALUES (?,?,?,?,?)", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots, req.body.EventDate ], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+})
+
+// Post to Course
+router.get('/enrollUser/:userId/:courseID/:courseCompletion', function requestHandler(req,res) {
+  mysql.query("INSERT INTO courseEnrollData (user_id, course_id, course_completion) VALUES (?,?,?)", [req.params.userId, req.params.courseID, req.params.courseCompletion], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+})
+
+router.get('/removeEnrolledUser/:userId/:courseID', function requestHandler(req,res) {
+  mysql.query("Delete FROM courseEnrollData WHERE user_id=? and course_id=? ", [req.params.userId, req.params.courseID], function (err, rows, fields) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -357,5 +487,6 @@ router.get('/updateQuizScores', function (req, res) {
       res.send(result)
   });
 });
+
 
 module.exports = router;
