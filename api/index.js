@@ -488,5 +488,4 @@ router.get('/updateQuizScores', function (req, res) {
   });
 });
 
-
 module.exports = router;
