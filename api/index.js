@@ -155,6 +155,38 @@ router.post('/achievements', function requestHandler(req,res) {
   });
 })
 
+//Access UserAchievements Table
+router.get('/userachievements', function (req, res) {
+
+  mysql.query("SELECT * FROM UserAchievements", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+// Post to UserAchievments Table
+router.post('/userachievements', function requestHandler(req,res) {
+  mysql.query("INSERT INTO UserAchievements (UserAchievementsID, UserID, BadgeID) VALUES (?,?,?)", [req.UserAchievementsID, req.UserID, req.BadgeID], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+})
+
 // Access Goals Table 
 router.get('/goal', function (req, res) {
   mysql.query("SELECT * FROM Goal", function (err, rows) {
