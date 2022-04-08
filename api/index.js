@@ -124,9 +124,9 @@ router.post('/userpost', function (req , res) {
 })*/
 
 //Access Achievements Table
-router.get('/achievements', function (req, res) {
+router.get('/achievement', function (req, res) {
 
-  mysql.query("SELECT * FROM Achievements", function (err, rows) {
+  mysql.query("SELECT * FROM Achievement", function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -141,8 +141,8 @@ router.get('/achievements', function (req, res) {
 });
 
 // Post to Achievments Table
-router.post('/achievements', function requestHandler(req,res) {
-  mysql.query("INSERT INTO Achievements (BadgeID, AchievementTitle, AchievementDescription, BadgeImage, AchievementStatus) VALUES (?,?,?,?,?)", [req.BadgeID, req.AchievementTitle, req.AchievementDescription, req.BadgeImage, req.AchievementStatus], function (err, rows) {
+router.post('/achievement', function requestHandler(req,res) {
+  mysql.query("INSERT INTO Achievement (BadgeID, AchievementTitle, AchievementDescription, BadgeImage, AchievementStatus) VALUES (?,?,?,?,?)", [req.BadgeID, req.AchievementTitle, req.AchievementDescription, req.BadgeImage, req.AchievementStatus], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
