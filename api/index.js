@@ -358,4 +358,30 @@ router.get('/updateQuizScores', function (req, res) {
   });
 });
 
+router.get('/Scores', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ChapterID FROM ChapterInfo WHERE CourseID = ' + params.CourseID
+  mysql.query(addSql, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      // addSql = 'SELECT ChapterInfo.ChapterName FROM QuizScores WHERE UserID = ' + params.UserID + ' AND ChapterID >= ' + result[0].ChapterID +
+      //     ' AND ChapterID <= ' + result[result.length - 1].ChapterID
+      addSql = 'SELECT QuizScores.Score,ChapterInfo.ChapterName ' +
+          ' FROM QuizScores,ChapterInfo ' +
+          ' WHERE QuizScores.UserID = ' + params.UserID +
+          ' AND QuizScores.ChapterID >= ' + result[0].ChapterID +
+          ' AND QuizScores.ChapterID <= ' + result[result.length - 1].ChapterID +
+          ' AND QuizScores.ChapterID=ChapterInfo.ChapterID'
+      mysql.query(addSql, function (err, result) {
+          if (err) {
+              res.send(err)
+              return;
+          }
+          res.send(result)
+      })
+  });
+});
+
 module.exports = router;
