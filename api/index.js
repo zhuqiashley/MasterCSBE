@@ -123,6 +123,41 @@ router.post('/userpost', function (req , res) {
   });
 })*/
 
+// Access CourseCompletion table to post COUNT() to QuizesTaken in User table
+router.post('/user', function (req, res) {
+
+  mysql.query("INSERT INTO User(QuizesTaken) VALUES ((SELECT COUNT(QuizComplete) FROM CourseCompletion))", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+// Access CourseComplettion table to post COUNT() to CoursesTaken in User table
+router.post('/user', function (req, res) {
+
+  mysql.query("INSERT INTO User(CoursesTaken) VALUES ((SELECT COUNT(CourseComplete) FROM CourseCompletion))", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+
 //Access Achievements Table
 router.get('/achievement', function (req, res) {
 
