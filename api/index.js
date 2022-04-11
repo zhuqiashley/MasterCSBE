@@ -384,4 +384,17 @@ router.get('/Scores', function (req, res) {
   });
 });
 
+router.get('/submitFeedback', function (req, res) {
+  let params = req.query
+  let addSql = 'INSERT INTO Feedback(UserID,CourseID,Content) VALUES(?,?,?)'
+  let addSqlParams = [params.UserID, params.CourseID, params.Feedback];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      res.send('ok')
+  });
+});
+
 module.exports = router;
