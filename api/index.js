@@ -8,7 +8,7 @@ var mysql = require('../config/config');
 
 router.use(express.json());
 
-// Acces Events Table
+// Access Events Table
 router.get('/event', function (req, res) {
     // res.status(200).send({"Success": "Base API"});
 
@@ -253,10 +253,10 @@ router.post('/userpost', function (req , res) {
   });
 })*/
 
-//Access Achievements Table
-router.get('/achievements', function (req, res) {
+// Access CourseCompletion table to post COUNT() to QuizesTaken in User table
+router.post('/user', function (req, res) {
 
-  mysql.query("SELECT * FROM Achievements", function (err, rows) {
+  mysql.query("INSERT INTO User(QuizesTaken) VALUES ((SELECT COUNT(QuizComplete) FROM CourseCompletion))", function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -269,6 +269,137 @@ router.get('/achievements', function (req, res) {
   });
 
 });
+
+// Access CourseComplettion table to post COUNT() to CoursesTaken in User table
+router.post('/user', function (req, res) {
+
+  mysql.query("INSERT INTO User(CoursesTaken) VALUES ((SELECT COUNT(CourseComplete) FROM CourseCompletion))", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+
+//Access Achievements Table
+router.get('/achievement', function (req, res) {
+
+  mysql.query("SELECT * FROM Achievement", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+// Post to Achievments Table
+router.post('/achievement', function requestHandler(req,res) {
+  mysql.query("INSERT INTO Achievement (BadgeID, AchievementTitle, AchievementDescription, BadgeImage) VALUES (?,?,?,?)", [req.BadgeID, req.AchievementTitle, req.AchievementDescription, req.BadgeImage], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+})
+
+//Access UserAchievements Table
+router.get('/userachievements', function (req, res) {
+
+  mysql.query("SELECT * FROM UserAchievements", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+// Post to UserAchievments Table
+router.post('/userachievements', function requestHandler(req,res) {
+  mysql.query("INSERT INTO UserAchievements (UserAchievementsID, UserID, BadgeID) VALUES (?,?,?)", [req.UserAchievementsID, req.UserID, req.BadgeID], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+})
+
+// Access Goals Table 
+router.get('/goal', function (req, res) {
+  mysql.query("SELECT * FROM Goal", function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
+
+// Post to Goals
+router.post('/goal', function requestHandler(req,res) {
+mysql.query("INSERT INTO Goal (GoalDescription, GoalTimeCreated) VALUES (?,?)", [req.body.GoalDescription, req.body.GoalTimeCreated], function (err, rows, fields) {
+  if(err) {
+    res.status(500).send(err);
+    return;
+  }
+
+  if(rows) {
+    res.status(200).send(rows);
+  }
+
+});
+})
+
+// Delete Goal
+router.delete('/goal/:GoalID', function requestHandler(req,res) {
+
+console.log(`Deleting goal with ID ${req.params.GoalID}`)
+mysql.query("DELETE FROM Goal WHERE GoalID = ? ", [req.params.GoalID], function (err, rows, fields){
+
+  if(err) {
+    res.status(500).send(err);
+    return;
+  }
+
+  if(rows) {
+    res.status(200).send({message:"success"});
+  }
+});
+
+})
 
 // Access Course Completion
 router.get('/CourseCompletion', function (req, res) {
