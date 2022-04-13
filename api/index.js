@@ -522,7 +522,7 @@ router.get('/goal', function (req, res) {
 
 // Post to Goals
 router.post('/goal', function requestHandler(req,res) {
-mysql.query("INSERT INTO Goal (GoalDescription, GoalTimeCreated) VALUES (?,?)", [req.body.GoalDescription, req.body.GoalTimeCreated], function (err, rows, fields) {
+mysql.query("INSERT INTO Goal (GoalID, UserID, GoalDescription, GoalTimeCreated, GoalDone) VALUES (?,?,?,?,?)", [req.body.GoalID, req.body.UserID, req.body.GoalDescription, req.body.GoalTimeCreated, reg.body.GoalDone], function (err, rows, fields) {
   if(err) {
     res.status(500).send(err);
     return;
@@ -539,7 +539,7 @@ mysql.query("INSERT INTO Goal (GoalDescription, GoalTimeCreated) VALUES (?,?)", 
 router.delete('/goal/:GoalID', function requestHandler(req,res) {
 
 console.log(`Deleting goal with ID ${req.params.GoalID}`)
-mysql.query("DELETE FROM Goal WHERE GoalID = ? ", [req.params.GoalID], function (err, rows, fields){
+mysql.query("DELETE FROM Goal WHERE UserID = ? AND GoalID = ? ", [req.body.userID, req.params.GoalID], function (err, rows, fields){
 
   if(err) {
     res.status(500).send(err);
@@ -547,7 +547,7 @@ mysql.query("DELETE FROM Goal WHERE GoalID = ? ", [req.params.GoalID], function 
   }
 
   if(rows) {
-    res.status(200).send({message:"success"});
+    res.status(200).send(rows);
   }
 });
 
