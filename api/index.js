@@ -11,19 +11,63 @@ router.use(express.json());
 // Access Events Table
 router.get('/event', function (req, res) {
     // res.status(200).send({"Success": "Base API"});
-
-    mysql.query("SELECT * FROM Event", function (err, rows) {
+    const today = new Date();
+    mysql.query("SELECT * FROM Event ORDER BY EventDate DESC", async function (err, rows) {
         if(err) {
           res.status(500).send(err);
           return;
         }
-
-        if(rows) {
-          res.status(200).send(rows);
+  
+      mysql.query("SELECT EventID, Tag FROM EventTag", function (err, tags) {
+        if(err) {
+            res.status(500).send(err);
+            return;
         }
-
+  
+        mysql.query("SELECT EventID, User.FirstName, User.LastName FROM UserEvents LEFT JOIN User ON User.UserID = UserEvents.UserID", function (err, users) {
+          if(err) {
+              res.status(500).send(err);
+              return;
+          }
+          
+          if(rows) {
+            // Return Upcoming Events and Past Events based on EventDate
+            const upcomingEvents = [];
+            const pastEvents = [];
+  
+            for(let i = 0; i < rows.length; i++) {
+              rows[i].EventTags = tags.filter(tag => tag.EventID === rows[i].EventID);
+              rows[i].Attendees = users.filter(user => user.EventID === rows[i].EventID);
+  
+              if(rows[i].EventDate > today) {
+                upcomingEvents.push(rows[i]);
+              }
+              else {
+                pastEvents.push(rows[i]);
+              }
+            }
+  
+            // Order Upcoming Events by EventDate nearest to current date
+            upcomingEvents.sort(function(a, b) {
+              return new Date(a.EventDate) - new Date(b.EventDate);
+            });
+  
+            // Count total per tag
+            const tagCount = {};
+            for(let i = 0; i < tags.length; i++) {
+              if(!tagCount[tags[i].Tag]) {
+                tagCount[tags[i].Tag] = 1;
+              }
+              else {
+                tagCount[tags[i].Tag]++;
+              }
+            }
+            
+            res.status(200).send({"upcomingEvents": upcomingEvents, "pastEvents": pastEvents});
+          }
+        });
+      });
     });
-
 });
 
 router.get('/getcourses/:Course', function (req, res) {
@@ -134,12 +178,87 @@ router.post('/event', function requestHandler(req,res) {
       return;
     }
 
-    if(rows) {
-      res.status(200).send(rows);
+    if (rows){
+      const EventID = rows.insertId;
+      // Add Tags to Tags Table
+      var tags = req.body.EventTags;
+      for(var i = 0; i < tags.length; i++) {
+        mysql.query("INSERT INTO EventTag (Tag, EventID) VALUES (?, ?)", [tags[i], EventID], function (err, rows, fields) {
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+        });
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
     }
 
   });
 })
+
+// Add user registration
+router.post('/event/register', function requestHandler(req, res) {
+  mysql.query("INSERT INTO UserEvents (UserID, EventID) VALUES (?, ?)", [req.body.UserID, req.body.EventID], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+  });
+});
+
+// Remove user registration
+router.delete('/event/register/:eventid/:userid', function requestHandler(req, res) {
+  mysql.query("DELETE FROM UserEvents WHERE UserID = ? AND EventID = ?", [req.params.userid, req.params.eventid], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+  });
+});
+
+// Update Event
+router.put('/event/:id', function requestHandler(req,res) {
+  mysql.query("UPDATE Event SET EventTitle = ?, EventDescription = ?, EventInstructor = ?, EventSpots = ?, EventDate = ? WHERE EventID = ?", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots, req.body.EventDate, req.params.id ], function (err, rows, fields) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    // Delete tags from event (will eventually replace with deleting individual tags)
+    mysql.query("DELETE FROM EventTag WHERE EventID = ?", [req.params.id], function (err, deletedRows, fields) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      // Add tags to event
+      var tags = req.body.EventTags;
+      for(var i = 0; i < tags.length; i++) {
+        mysql.query("INSERT INTO EventTag (Tag, EventID) VALUES (?, ?)", [tags[i], req.params.id], function (err, rows, fields) {
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+        });
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+    });
+  });
+});
 
 // Post to Course
 router.get('/enrollUser/:userId/:courseID/:courseCompletion', function requestHandler(req,res) {
@@ -181,9 +300,24 @@ router.delete('/event/:EventID', function requestHandler(req,res) {
       return;
     }
 
-    if(rows) {
-      res.status(200).send({message:"success"});
-    }
+    mysql.query("DELETE FROM Event WHERE EventID = ? ", [req.params.EventID], function (err, rows, fields){
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        // Delete Tags from Tags Table
+        mysql.query("DELETE FROM EventTag WHERE EventID = ?", [req.params.EventID], function (err, rows, fields) {
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+
+          res.status(200).send({message:"success"});
+        });
+      }
+    });
   });
 
 })
@@ -199,6 +333,24 @@ router.get('/user', function (req, res) {
 
     if(rows) {
       res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+// Get user object - I'm using this mainly for roles - kg
+router.get('/user/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows[0]);
     }
 
   });
