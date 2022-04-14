@@ -59,7 +59,7 @@ router.delete('/event/:EventID', function requestHandler(req,res) {
 })
 
 // Access User Table
-router.get('/user', function (req, res) {
+router.get('/userwithoutid', function (req, res) {
 
   mysql.query("SELECT * FROM User", function (err, rows) {
     if(err) {
@@ -75,6 +75,30 @@ router.get('/user', function (req, res) {
 
 });
 
+//Access User Table With ID
+router.get('/user', function (req, res) {
+
+  //mysql.query("SELECT * FROM User WHERE UserID = ?", [req.params.UserID], function (err, rows) {
+    /*let id = req;
+    console.log("id = ");
+    console.log(id);*/
+    //let idstring = id.toString();
+    let sql ='SELECT * FROM User WHERE UserID = 3'
+    mysql.query(sql, function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+//Post to User Table
 router.post('/userpost', function (req , res) {
 
   //let firstname;
@@ -198,11 +222,11 @@ router.get('/quiz', function (req, res) {
   });
 
 });
-
+//change id to UserID
 // Access Quiz Table with ID
 router.get('/quiz/:id', function (req, res) {
 
-  mysql.query("SELECT * FROM Quiz WHERE UserID = ?" + [req.params.id], function (err, rows) {
+  mysql.query("SELECT * FROM Quiz WHERE UserID = ?" + [req.params.UserID], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
