@@ -83,7 +83,8 @@ router.post('/userpost', function (req , res) {
     lastname : req.body.LastName,
     //role : req.body.Role,
     Username : req.body.username,
-    Password : req.body.password
+    Password : req.body.password,
+    Role : req.body.role
     /*firstname : 'Sam',
     lastname : 'Smith',
     role : 'Student',
@@ -123,6 +124,30 @@ router.post('/userpost', function (req , res) {
   });
 })*/
 
+//Edit User Profile
+router.post('/useredit/:id', function (req , res) {
+
+  let record = {
+    firstname : req.body.FirstName,
+    lastname : req.body.LastName,
+    Username : req.body.username,
+    Password : req.body.password,
+    Role : req.body.role
+  };
+
+  mysql.query("UPDATE User SET ?",record, "WHERE UserID = ?" [req.params.id], function(err, rows){
+    if(err){
+      res.status(500).send(err);
+      return;
+    }
+    if(rows)
+    {
+      res.status(200).send(rows);
+    }
+  })
+
+});
+
 //Access Achievements Table
 router.get('/achievements', function (req, res) {
 
@@ -161,6 +186,23 @@ router.get('/CourseCompletion', function (req, res) {
 router.get('/quiz', function (req, res) {
 
   mysql.query("SELECT * FROM Quiz", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+// Access Quiz Table with ID
+router.get('/quiz/:id', function (req, res) {
+
+  mysql.query("SELECT * FROM Quiz WHERE UserID = ?" + [req.params.id], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
