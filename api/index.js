@@ -124,8 +124,7 @@ router.get('/getCourseData/:courseID', function (req, res) {
 
 router.get('/getForumData/:courseID', function (req, res) {
   // res.status(200).send({"Success": "Base API"});
-
-  mysql.query("SELECT question, comments, comment_count, like_count, posted_on, views_count, forum_src FROM Forum where user_id =1 and course_id = ?",[req.params.courseID], function (err, rows) {
+  mysql.query("SELECT * FROM Forum where course_id = ? ORDER BY posted_on DESC;",[req.params.courseID], function (err, rows) {
       if(err) {
         res.status(500).send(err);
         return;
@@ -322,8 +321,41 @@ router.delete('/event/:EventID', function requestHandler(req,res) {
 
 })
 
+//  forum delete 
+router.delete('/forum/:forumID', function requestHandler(req,res) {
+  mysql.query("DELETE FROM Forum WHERE id = ? ", [req.params.forumID], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+
+})
+
+//  forum delete 
+router.delete('/announcment/:id', function requestHandler(req,res) {
+  console.log(req.params.id)
+  mysql.query("DELETE FROM Announcement WHERE id = ? ", [req.params.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+
+})
+
 // Access User Table
-router.get('/user', function (req, res) {
+router.get('/userwithoutid', function (req, res) {
 
   mysql.query("SELECT * FROM User", function (err, rows) {
     if(err) {
@@ -365,7 +397,8 @@ router.post('/userpost', function (req , res) {
     lastname : req.body.LastName,
     //role : req.body.Role,
     Username : req.body.username,
-    Password : req.body.password
+    Password : req.body.password,
+    Role : req.body.role
     /*firstname : 'Sam',
     lastname : 'Smith',
     role : 'Student',
@@ -405,6 +438,32 @@ router.post('/userpost', function (req , res) {
   });
 })*/
 
+//Edit User Profile
+router.post('/useredit/:id', function (req , res) {
+
+  let record = {
+    firstname : req.body.FirstName,
+    lastname : req.body.LastName,
+    Username : req.body.username,
+    Password : req.body.password,
+    Role : req.body.role
+  };
+
+  mysql.query("UPDATE User SET ?",record, "WHERE UserID = ?" [req.params.id], function(err, rows){
+    if(err){
+      res.status(500).send(err);
+      return;
+    }
+    if(rows)
+    {
+      res.status(200).send(rows);
+    }
+  })
+
+});
+
+//Access Achievements Table
+router.get('/achievements', function (req, res) {
 // Access CourseCompletion table to post COUNT() to QuizesTaken in User table
 router.post('/user', function (req, res) {
 
@@ -586,6 +645,23 @@ router.get('/quiz', function (req, res) {
   });
 
 });
+//change id to UserID
+// Access Quiz Table with ID
+router.get('/quiz/:id', function (req, res) {
+
+  mysql.query("SELECT * FROM Quiz WHERE UserID = ?" + [req.params.UserID], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
 
 // Access Video Completion Table
 router.get('/VideoCompletion', function (req, res) {
@@ -653,6 +729,67 @@ router.get('/UserEvents', function (req, res) {
 //   });
 // })
 
+router.post('/forum/add', function (req , res) {
+  try {
+    //let firstname;
+    let record = {
+      course_id : req.body.course_id,
+      user_id : req.body.user_id,
+      //role : req.body.Role,
+      question : req.body.title,
+      forum_src : req.body.forum_src,
+      posted_on: new Date(),
+    };
+  
+    mysql.query('INSERT INTO Forum SET ?', record, function(error, results, fields) {
+      if (error) throw error;
+      res.status(200).send(results);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
+});
+
+router.post('/announcment/add', async function (req , res) {
+  try {
+    //let firstname;
+    console.log(req)
+
+    let record = {
+      course_id : req.body.course_id,
+      user_id : req.body.user_id,
+      title : req.body.title,
+      img_src : req.body.img_src,
+      description: req.body.description,
+      posted_on: new Date(),
+    };
+  
+    mysql.query('INSERT INTO Announcement SET ?', record, function(error, results, fields) {
+      if (error) throw error;
+      res.status(200).send(results);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
+});
+
+router.get('/getAnnouncments/:courseID', function (req, res) {
+  // res.status(200).send({"Success": "Base API"});
+  mysql.query("SELECT * FROM Announcement where course_id = ? ORDER BY posted_on DESC;",[req.params.courseID], function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+      if(rows) {
+        res.status(200).send(rows);
+      }
+
+  });
+
+});
 
 router.get('/Ctest', function (req, res) {
   let params = req.query
