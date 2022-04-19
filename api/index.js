@@ -463,7 +463,8 @@ router.post('/useredit/:id', function (req , res) {
 });
 
 //Access Achievements Table
-router.get('/achievements', function (req, res) {
+//router.get('/achievements', function (req, res) {
+
 // Access CourseCompletion table to post COUNT() to QuizesTaken in User table
 router.post('/user', function (req, res) {
 
