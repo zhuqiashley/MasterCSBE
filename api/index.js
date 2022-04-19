@@ -208,6 +208,7 @@ router.post('/event/register', function requestHandler(req, res) {
 
     if(rows) {
       res.status(200).send(rows);
+      console.log(req.body.UserID)
     }
   });
 });
@@ -222,6 +223,7 @@ router.delete('/event/register/:eventid/:userid', function requestHandler(req, r
 
     if(rows) {
       res.status(200).send(rows);
+      console.log(req.params.userid)
     }
   });
 });
