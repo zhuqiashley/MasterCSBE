@@ -389,24 +389,32 @@ router.get('/user/:id', function (req, res) {
 
 });
 
-router.post('/userpost', function (req , res) {
 
-  //let firstname;
-  let record = {
-    firstname : req.body.FirstName,
-    lastname : req.body.LastName,
-    //role : req.body.Role,
-    Username : req.body.username,
-    Password : req.body.password,
-    Role : req.body.role
-    /*firstname : 'Sam',
-    lastname : 'Smith',
-    role : 'Student',
-    Username : 'johnsmith@email.com',
-    Password : 'password'*/
-  };
+//
+//get all fields of user, used for profile
+router.get('/userprofile/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM User WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
 
-  /*mysql.query("INSERT INTO `User`(`UserID`, `FirstName`, `LastName`, `Role`, `username`, `password`, `BadgeGiven`, `LessonsTaken`, `CoursesTaken`, `QuizesTaken`, `Streaks`, `Points`) VALUES ('firstname',$firstname,'[value-3]','[value-4]','[value-5]','[value-6]','[value-7]','[value-8]','[value-9]','[value-10]','[value-11]','[value-12]')", function (err, rows) {
+    if(rows) {
+      res.status(200).send(rows[0]);
+    }
+
+  });
+
+});
+
+
+//get all quiz scores for a user, used for statistics
+router.get('/quizscoreswithid/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM QuizScores WHERE UserID = ? ", [ id ], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -416,7 +424,89 @@ router.post('/userpost', function (req , res) {
       res.status(200).send(rows);
     }
 
-  });*/
+  });
+
+});
+
+router.get('/introresult/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM IntroQuizResult WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows[0]);
+    }
+
+  });
+
+});
+
+router.get('/videocompletionwithid/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM VideoCompletion WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+router.get('/eventwithid', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM Event", function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+router.get('/usereventwithid/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM UserEvents WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+router.post('/userpost', function (req , res) {
+
+  //let firstname;
+  let record = {
+    firstname : req.body.FirstName,
+    lastname : req.body.LastName,
+    Username : req.body.username,
+    Password : req.body.password,
+    Role : req.body.role
+  };
+
   mysql.query('INSERT INTO User SET ?', record, function(error, results, fields) {
     if (error) throw error;
     console.log(results.insertId);
@@ -424,47 +514,26 @@ router.post('/userpost', function (req , res) {
 
 });
 
-/*router.post('/user', function requestHandler(req,res) {
-  mysql.query("INSERT INTO User (FirstName, LastName, username, password) VALUES (?,?,?,?)", [req.body.FirstName, req.body.LastName, req.body.username, req.body.password ], function (err, rows, fields) {
-    if(err) {
-      res.status(500).send(err);
-      return;
-    }
-
-    if(rows) {
-      res.status(200).send({message:"success"});
-    }
-
-  });
-})*/
 
 //Edit User Profile
-router.post('/useredit/:id', function (req , res) {
+router.put('/useredit/:id', function (req , res) {
 
-  let record = {
-    firstname : req.body.FirstName,
-    lastname : req.body.LastName,
-    Username : req.body.username,
-    Password : req.body.password,
-    Role : req.body.role
-  };
+  let firstname = req.body.FirstName
+  let lastname = req.body.LastName
+  let Username = req.body.username
+  let id = req.body.ID;
 
-  mysql.query("UPDATE User SET ?",record, "WHERE UserID = ?" [req.params.id], function(err, rows){
-    if(err){
-      res.status(500).send(err);
-      return;
-    }
-    if(rows)
-    {
-      res.status(200).send(rows);
-    }
+    mysql.query("UPDATE User SET FirstName = ?, LastName = ?, username = ? WHERE UserID = ?", [firstname, lastname, Username, id], function (err, rows, fields) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
   })
 
 });
 
 //Access Achievements Table
-//router.get('/achievements', function (req, res) {
-
+router.get('/achievements', function (req, res) {});
 // Access CourseCompletion table to post COUNT() to QuizesTaken in User table
 router.post('/user', function (req, res) {
 
