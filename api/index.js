@@ -1034,5 +1034,21 @@ router.get('/getVideo', function (req, res) {
       }
   });
 });
+
+router.get('/getChapterName', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ChapterName FROM ChapterInfo WHERE ChapterID = ?'
+  let addSqlParams = [params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
+  });
+});
+
 module.exports = router;
 
