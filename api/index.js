@@ -1052,5 +1052,35 @@ router.get('/submitFeedback', function (req, res) {
   });
 });
 
+router.post('/getProgress', function (req, res) {
+  let postData = req.body
+  let addSql = 'select * FROM courseEnrollData WHERE user_id = ? AND course_id = ?'
+  let addSqlParams = [postData.user_id, postData.course_id];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      return res.send(result)
+  });
+});
+
+router.post('/updateProgress', function (req , res) {
+  try {
+    const record = {
+      course_completion: req.body.course_completion
+    }
+    mysql.query("UPDATE courseEnrollData SET ? WHERE course_id = ? AND user_id = ?",[record, req.body.course_id, req.body.user_id], function(err, result) {
+      if (err) {
+        return res.send(err);
+      }
+      res.send(result)
+    })
+    
+  } catch (error) {
+    console.log(error);
+  }
+
+});
 module.exports = router;
 
