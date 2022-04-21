@@ -411,6 +411,24 @@ router.get('/userprofile/:id', function (req, res) {
 
 });
 
+//get user profile by name, for login
+router.get('/userlogin/:username', function (req, res) {
+  const username = req.params.username;
+  
+  mysql.query("SELECT * FROM User WHERE username = ? ", [ username ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows[0]);
+    }
+
+  });
+
+});
+
 
 //get all quiz scores for a user, used for statistics
 router.get('/quizscoreswithid/:id', function (req, res) {
@@ -447,6 +465,26 @@ router.get('/introresult/:id', function (req, res) {
 
 });
 
+
+//course completion
+router.get('/coursecompletionwithid/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM CourseCompletion WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+//video completion
 router.get('/videocompletionwithid/:id', function (req, res) {
   const id = req.params.id;
   
@@ -506,7 +544,9 @@ router.post('/userpost', function (req , res) {
     lastname : req.body.LastName,
     Username : req.body.username,
     Password : req.body.password,
-    Role : req.body.role
+    Role : req.body.role,
+    SecurityQuestion : req.body.SecurityQuestion,
+    SecurityAnswer : req.body.SecurityAnswer
   };
 
   mysql.query('INSERT INTO User SET ?', record, function(error, results, fields) {
@@ -518,15 +558,34 @@ router.post('/userpost', function (req , res) {
 
 
 //Edit User Profile
-router.put('/useredit/:id', function (req , res) {
+router.put('/useredit', function (req , res) {
 
   let firstname = req.body.FirstName
   let lastname = req.body.LastName
   let Username = req.body.username
-  let id = req.body.ID;
+  let id = req.body.id;
+  //console.log(id);
 
     mysql.query("UPDATE User SET FirstName = ?, LastName = ?, username = ? WHERE UserID = ?", [firstname, lastname, Username, id], function (err, rows, fields) {
       if(err) {
+        console.log(id);
+        res.status(500).send(err);
+        return;
+      }
+  })
+
+});
+
+//change password
+router.put('/changepassword', function (req , res) {
+
+  let password = req.body.Password;
+  let id = req.body.id;
+  //console.log(id);
+
+    mysql.query("UPDATE User SET password = ? WHERE UserID = ?", [password, id], function (err, rows, fields) {
+      if(err) {
+        console.log(id);
         res.status(500).send(err);
         return;
       }
@@ -704,7 +763,7 @@ router.get('/CourseCompletion', function (req, res) {
 // Access Quiz Table
 router.get('/quiz', function (req, res) {
 
-  mysql.query("SELECT * FROM Quiz", function (err, rows) {
+  mysql.query("SELECT * FROM QuizScores", function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
