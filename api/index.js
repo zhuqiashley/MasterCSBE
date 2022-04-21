@@ -1097,6 +1097,51 @@ router.get('/submitFeedback', function (req, res) {
   });
 });
 
+router.get('/getReference', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ReferenceLink FROM ChapterInfo WHERE CourseID = ? AND ChapterID = ?'
+  let addSqlParams = [params.CourseID, params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
+  });
+});
+
+router.get('/getVideo', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ModuleVideo FROM Module WHERE CourseID = ? AND ModuleID = ?'
+  let addSqlParams = [params.CourseID, params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
+  });
+});
+
+router.get('/getChapterName', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ChapterName FROM ChapterInfo WHERE ChapterID = ?'
+  let addSqlParams = [params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
+  });
+});
+
 router.post('/getProgress', function (req, res) {
   let postData = req.body
   let addSql = 'select * FROM courseEnrollData WHERE user_id = ? AND course_id = ?'
