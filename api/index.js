@@ -1082,5 +1082,22 @@ router.post('/updateProgress', function (req , res) {
   }
 
 });
+
+router.post('/chapterCompletion', function (req , res) {
+  try {
+    mysql.query("INSERT INTO CourseCompletion(userID,CourseComplete, course_id) VALUES(?,?,?)",[req.body.user_id, 1, req.body.course_id], function(err, result) {
+      if (err) {
+        return res.send(err);
+      }
+      res.send(result)
+    })
+    
+    
+  } catch (error) {
+    console.log(error);
+  }
+
+});
+
 module.exports = router;
 
