@@ -411,6 +411,24 @@ router.get('/userprofile/:id', function (req, res) {
 
 });
 
+//get user profile by name, for login
+router.get('/userlogin/:username', function (req, res) {
+  const username = req.params.username;
+  
+  mysql.query("SELECT * FROM User WHERE username = ? ", [ username ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows[0]);
+    }
+
+  });
+
+});
+
 
 //get all quiz scores for a user, used for statistics
 router.get('/quizscoreswithid/:id', function (req, res) {
@@ -447,6 +465,26 @@ router.get('/introresult/:id', function (req, res) {
 
 });
 
+
+//course completion
+router.get('/coursecompletionwithid/:id', function (req, res) {
+  const id = req.params.id;
+  
+  mysql.query("SELECT * FROM CourseCompletion WHERE UserID = ? ", [ id ], function (err, rows) {
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send(rows);
+    }
+
+  });
+
+});
+
+//video completion
 router.get('/videocompletionwithid/:id', function (req, res) {
   const id = req.params.id;
   
@@ -506,7 +544,9 @@ router.post('/userpost', function (req , res) {
     lastname : req.body.LastName,
     Username : req.body.username,
     Password : req.body.password,
-    Role : req.body.role
+    Role : req.body.role,
+    SecurityQuestion : req.body.SecurityQuestion,
+    SecurityAnswer : req.body.SecurityAnswer
   };
 
   mysql.query('INSERT INTO User SET ?', record, function(error, results, fields) {
@@ -518,15 +558,34 @@ router.post('/userpost', function (req , res) {
 
 
 //Edit User Profile
-router.put('/useredit/:id', function (req , res) {
+router.put('/useredit', function (req , res) {
 
   let firstname = req.body.FirstName
   let lastname = req.body.LastName
   let Username = req.body.username
-  let id = req.body.ID;
+  let id = req.body.id;
+  //console.log(id);
 
     mysql.query("UPDATE User SET FirstName = ?, LastName = ?, username = ? WHERE UserID = ?", [firstname, lastname, Username, id], function (err, rows, fields) {
       if(err) {
+        console.log(id);
+        res.status(500).send(err);
+        return;
+      }
+  })
+
+});
+
+//change password
+router.put('/changepassword', function (req , res) {
+
+  let password = req.body.Password;
+  let id = req.body.id;
+  //console.log(id);
+
+    mysql.query("UPDATE User SET password = ? WHERE UserID = ?", [password, id], function (err, rows, fields) {
+      if(err) {
+        console.log(id);
         res.status(500).send(err);
         return;
       }
@@ -704,7 +763,7 @@ router.get('/CourseCompletion', function (req, res) {
 // Access Quiz Table
 router.get('/quiz', function (req, res) {
 
-  mysql.query("SELECT * FROM Quiz", function (err, rows) {
+  mysql.query("SELECT * FROM QuizScores", function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -801,22 +860,38 @@ router.get('/UserEvents', function (req, res) {
 //   });
 // })
 
-router.post('/forum/add', function (req , res) {
+router.post('/forum/add', async function (req , res) {
   try {
-    //let firstname;
-    let record = {
-      course_id : req.body.course_id,
-      user_id : req.body.user_id,
-      //role : req.body.Role,
-      question : req.body.title,
-      forum_src : req.body.forum_src,
-      posted_on: new Date(),
-    };
-  
-    mysql.query('INSERT INTO Forum SET ?', record, function(error, results, fields) {
-      if (error) throw error;
-      res.status(200).send(results);
-    });
+
+    await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
+      if(err) {
+        return;
+      }
+      if(rows) {
+        let firstName = ''
+        let lastName = ''
+        if(rows[0]) {
+          firstName = rows[0].FirstName
+          lastName = rows[0].LastName
+        } 
+        let postByName = firstName + ' ' + lastName 
+
+        let record = {
+          course_id : req.body.course_id,
+          user_id : req.body.user_id,
+          //role : req.body.Role,
+          question : req.body.title,
+          forum_src : req.body.forum_src,
+          posted_on: new Date(),
+          postByName: postByName,
+        };
+      
+        mysql.query('INSERT INTO Forum SET ?', record, function(error, results, fields) {
+          if (error) throw error;
+          res.status(200).send(results);
+        });
+      }
+    })
   } catch (error) {
     console.log(error);
   }
@@ -825,24 +900,41 @@ router.post('/forum/add', function (req , res) {
 
 router.post('/announcment/add', async function (req , res) {
   try {
-    //let firstname;
     console.log(req)
+    //let firstname;
+    let userData = ''
+    await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
+      if(err) {
+        return;
+      }
+      if(rows) {
+        let firstName = ''
+        let lastName = ''
+        if(rows[0]) {
+          firstName = rows[0].FirstName
+          lastName = rows[0].LastName
+        } 
+        let postByName = firstName + ' ' + lastName 
 
-    let record = {
-      course_id : req.body.course_id,
-      user_id : req.body.user_id,
-      title : req.body.title,
-      img_src : req.body.img_src,
-      description: req.body.description,
-      posted_on: new Date(),
-    };
-  
-    mysql.query('INSERT INTO Announcement SET ?', record, function(error, results, fields) {
-      if (error) throw error;
-      res.status(200).send(results);
-    });
+        let record = {
+          course_id : req.body.course_id,
+          user_id : req.body.user_id,
+          title : req.body.title,
+          img_src : req.body.img_src,
+          description: req.body.description,
+          posted_on: new Date(),
+          postByName: postByName
+        };
+      
+        mysql.query('INSERT INTO Announcement SET ?', record, function(error, results, fields) {
+          if (error) throw error;
+          return res.status(200).send(results);
+        });
+      }
+    })
   } catch (error) {
     console.log(error);
+    return res.status(500).send('internal server error!')
   }
 
 });
@@ -1005,49 +1097,51 @@ router.get('/submitFeedback', function (req, res) {
   });
 });
 
-router.get('/getReference', function (req, res) {
-  let params = req.query
-  let addSql = 'SELECT ReferenceLink FROM ChapterInfo WHERE CourseID = ? AND ChapterID = ?'
-  let addSqlParams = [params.CourseID, params.ChapterID];
+router.post('/getProgress', function (req, res) {
+  let postData = req.body
+  let addSql = 'select * FROM courseEnrollData WHERE user_id = ? AND course_id = ?'
+  let addSqlParams = [postData.user_id, postData.course_id];
   mysql.query(addSql, addSqlParams, function (err, result) {
       if (err) {
           res.send(err)
           return;
       }
-      if (result) {
-          res.send(result)
-      }
+      return res.send(result)
   });
 });
 
-router.get('/getVideo', function (req, res) {
-  let params = req.query
-  let addSql = 'SELECT ModuleVideo FROM Module WHERE CourseID = ? AND ModuleID = ?'
-  let addSqlParams = [params.CourseID, params.ChapterID];
-  mysql.query(addSql, addSqlParams, function (err, result) {
+router.post('/updateProgress', function (req , res) {
+  try {
+    const record = {
+      course_completion: req.body.course_completion
+    }
+    mysql.query("UPDATE courseEnrollData SET ? WHERE course_id = ? AND user_id = ?",[record, req.body.course_id, req.body.user_id], function(err, result) {
       if (err) {
-          res.send(err)
-          return;
+        return res.send(err);
       }
-      if (result) {
-          res.send(result)
-      }
-  });
+      res.send(result)
+    })
+    
+  } catch (error) {
+    console.log(error);
+  }
+
 });
 
-router.get('/getChapterName', function (req, res) {
-  let params = req.query
-  let addSql = 'SELECT ChapterName FROM ChapterInfo WHERE ChapterID = ?'
-  let addSqlParams = [params.ChapterID];
-  mysql.query(addSql, addSqlParams, function (err, result) {
+router.post('/chapterCompletion', function (req , res) {
+  try {
+    mysql.query("INSERT INTO CourseCompletion(userID,CourseComplete, course_id) VALUES(?,?,?)",[req.body.user_id, 1, req.body.course_id], function(err, result) {
       if (err) {
-          res.send(err)
-          return;
+        return res.send(err);
       }
-      if (result) {
-          res.send(result)
-      }
-  });
+      res.send(result)
+    })
+    
+    
+  } catch (error) {
+    console.log(error);
+  }
+
 });
 
 module.exports = router;
