@@ -801,22 +801,38 @@ router.get('/UserEvents', function (req, res) {
 //   });
 // })
 
-router.post('/forum/add', function (req , res) {
+router.post('/forum/add', async function (req , res) {
   try {
-    //let firstname;
-    let record = {
-      course_id : req.body.course_id,
-      user_id : req.body.user_id,
-      //role : req.body.Role,
-      question : req.body.title,
-      forum_src : req.body.forum_src,
-      posted_on: new Date(),
-    };
-  
-    mysql.query('INSERT INTO Forum SET ?', record, function(error, results, fields) {
-      if (error) throw error;
-      res.status(200).send(results);
-    });
+
+    await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
+      if(err) {
+        return;
+      }
+      if(rows) {
+        let firstName = ''
+        let lastName = ''
+        if(rows[0]) {
+          firstName = rows[0].FirstName
+          lastName = rows[0].LastName
+        } 
+        let postByName = firstName + ' ' + lastName 
+
+        let record = {
+          course_id : req.body.course_id,
+          user_id : req.body.user_id,
+          //role : req.body.Role,
+          question : req.body.title,
+          forum_src : req.body.forum_src,
+          posted_on: new Date(),
+          postByName: postByName,
+        };
+      
+        mysql.query('INSERT INTO Forum SET ?', record, function(error, results, fields) {
+          if (error) throw error;
+          res.status(200).send(results);
+        });
+      }
+    })
   } catch (error) {
     console.log(error);
   }
@@ -825,24 +841,41 @@ router.post('/forum/add', function (req , res) {
 
 router.post('/announcment/add', async function (req , res) {
   try {
-    //let firstname;
     console.log(req)
+    //let firstname;
+    let userData = ''
+    await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
+      if(err) {
+        return;
+      }
+      if(rows) {
+        let firstName = ''
+        let lastName = ''
+        if(rows[0]) {
+          firstName = rows[0].FirstName
+          lastName = rows[0].LastName
+        } 
+        let postByName = firstName + ' ' + lastName 
 
-    let record = {
-      course_id : req.body.course_id,
-      user_id : req.body.user_id,
-      title : req.body.title,
-      img_src : req.body.img_src,
-      description: req.body.description,
-      posted_on: new Date(),
-    };
-  
-    mysql.query('INSERT INTO Announcement SET ?', record, function(error, results, fields) {
-      if (error) throw error;
-      res.status(200).send(results);
-    });
+        let record = {
+          course_id : req.body.course_id,
+          user_id : req.body.user_id,
+          title : req.body.title,
+          img_src : req.body.img_src,
+          description: req.body.description,
+          posted_on: new Date(),
+          postByName: postByName
+        };
+      
+        mysql.query('INSERT INTO Announcement SET ?', record, function(error, results, fields) {
+          if (error) throw error;
+          return res.status(200).send(results);
+        });
+      }
+    })
   } catch (error) {
     console.log(error);
+    return res.status(500).send('internal server error!')
   }
 
 });
