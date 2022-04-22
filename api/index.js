@@ -534,8 +534,7 @@ router.put('/useredit/:id', function (req , res) {
 
 });
 
-//Access Achievements Table
-router.get('/achievements', function (req, res) {});
+
 // Access CourseCompletion table to post COUNT() to QuizesTaken in User table
 router.post('/user', function (req, res) {
 
@@ -586,6 +585,12 @@ router.get('/achievement', function (req, res) {
 
   });
 
+  mysql.query("SELECT BadgeID, User.FirstName, User.LastName FROM UserAchievements LEFT JOIN User ON User.UserID = Users.UserID", function (err, users) {
+        if(err) {
+            res.status(500).send(err);
+            return;
+        }
+
 });
 
 // Post to Achievments Table
@@ -621,19 +626,19 @@ router.get('/userachievements', function (req, res) {
 });
 
 // Post to UserAchievments Table
-router.post('/userachievements', function requestHandler(req,res) {
-  mysql.query("INSERT INTO UserAchievements (UserAchievementsID, UserID, BadgeID) VALUES (?,?,?)", [req.UserAchievementsID, req.UserID, req.BadgeID], function (err, rows) {
-    if(err) {
-      res.status(500).send(err);
-      return;
-    }
+router.post('/userachievements', function requestHandler(req, res) {
+    mysql.query("INSERT INTO UserAchievements (UserAchievementsID, UserID, BadgeID) VALUES (?,?,?)", [req.UserAchievementsID, req.UserID, req.BadgeID], function (err, rows) {
+      if (err) {
+        res.status(500).send(err);
+        return;
+      }
 
-    if(rows) {
-      res.status(200).send(rows);
-    }
+      if (rows) {
+        res.status(200).send(rows);
+      }
 
-  });
-})
+    });
+});
 
 // Access Goals Table 
 router.get('/goal', function (req, res) {
@@ -1018,6 +1023,4 @@ router.get('/submitFeedback', function (req, res) {
       res.send('ok')
   });
 });
-
-module.exports = router;
-
+  
