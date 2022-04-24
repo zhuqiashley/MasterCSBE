@@ -955,20 +955,6 @@ router.get('/getAnnouncments/:courseID', function (req, res) {
 
 });
 
-router.get('/Ctest', function (req, res) {
-  let params = req.query
-  let addSql = 'INSERT INTO QuizAnswers(UserID,QuizID,Answer) VALUES(?,?,?)'
-  let addSqlParams = [1, 1, 1];
-  mysql.query(addSql, addSqlParams, function (err, result) {
-      if (err) {
-          console.log('[INSERT ERROR] - ', err.message);
-          return;
-      }
-      console.log('INSERT ID:', result);
-  });
-  res.send('Hello')
-});
-
 router.get('/ChapterInfo', function (req, res) {
   mysql.query("SELECT * FROM ChapterInfo WHERE CourseID = " + req.query.CourseID, function (err, rows) {
       if (err) {
@@ -1108,6 +1094,51 @@ router.get('/submitFeedback', function (req, res) {
           return;
       }
       res.send('ok')
+  });
+});
+
+router.get('/getReference', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ReferenceLink FROM ChapterInfo WHERE CourseID = ? AND ChapterID = ?'
+  let addSqlParams = [params.CourseID, params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
+  });
+});
+
+router.get('/getVideo', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ModuleVideo FROM Module WHERE CourseID = ? AND ModuleID = ?'
+  let addSqlParams = [params.CourseID, params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
+  });
+});
+
+router.get('/getChapterName', function (req, res) {
+  let params = req.query
+  let addSql = 'SELECT ChapterName FROM ChapterInfo WHERE ChapterID = ?'
+  let addSqlParams = [params.ChapterID];
+  mysql.query(addSql, addSqlParams, function (err, result) {
+      if (err) {
+          res.send(err)
+          return;
+      }
+      if (result) {
+          res.send(result)
+      }
   });
 });
 
