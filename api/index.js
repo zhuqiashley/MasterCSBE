@@ -356,6 +356,100 @@ router.delete('/announcment/:id', function requestHandler(req,res) {
 
 })
 
+router.post('/announcment/update', function requestHandler(req,res) {
+  mysql.query("UPDATE Announcement SET title = ?, description = ?, posted_on = ?  WHERE id = ? ", [req.body.title, req.body.description, req.body.postedDate, req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+
+})
+
+router.post('/forum/update', function requestHandler(req,res) {
+  mysql.query("UPDATE Forum SET question = ?, comments = ?, posted_on = ?  WHERE id = ? ", [req.body.title, req.body.description, req.body.postedDate, req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+
+})
+
+router.post('/like/announcment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Announcement WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        likedArr.push(req.body.user_id)
+        let likeCount = rows[0].like_count + 1
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Announcement SET likedArr = ?, like_count = ? WHERE id = ?", [likedArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
+router.post('/like/forum', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Forum WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        likedArr.push(req.body.user_id)
+        let likeCount = rows[0].like_count + 1
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Forum SET likedArr = ?, like_count = ? WHERE id = ?", [likedArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
 // Access User Table
 router.get('/userwithoutid', function (req, res) {
 
