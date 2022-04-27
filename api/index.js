@@ -1481,11 +1481,10 @@ router.get('/getChapterName', function (req, res) {
   });
 });
 
-router.get('/getProgress', function (req, res) {
+router.post('/getProgress', function (req, res) {
   //let postData = req.params;
   let id = req.body.user_id;
   let course = req.body.course_id;
-  console.log(req.body);
   let addSql = "SELECT * FROM courseEnrollData WHERE user_id = ? AND course_id = ?"
   let addSqlParams = [id, course];
   //console.log(postData);
