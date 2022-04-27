@@ -596,6 +596,44 @@ router.post('/forum/comment', function requestHandler(req,res) {
 
 })
 
+router.post('/removeLike/announcment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Announcement WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        let newArr = []
+        likedArr = likedArr.map((item)=> {
+          if(req.body.user_id != item) {
+            newArr.push(item)
+          }
+        })
+        newArr = newArr.join(",")
+        let likeCount = rows[0].like_count ? rows[0].like_count - 1 : rows[0].like_count
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Announcement SET likedArr = ?, like_count = ? WHERE id = ?", [newArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
 // Access User Table
 router.get('/userwithoutid', function (req, res) {
 
