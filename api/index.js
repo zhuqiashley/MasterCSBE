@@ -748,7 +748,7 @@ router.get('/introresult/:id', function (req, res) {
 router.get('/coursecompletionwithid/:id', function (req, res) {
   const id = req.params.id;
   
-  mysql.query("SELECT * FROM CourseCompletion WHERE UserID = ? ", [ id ], function (err, rows) {
+  mysql.query("SELECT * FROM CourseCompletionAustin WHERE UserID = ? ", [ id ], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -853,6 +853,32 @@ router.put('/useredit', function (req , res) {
   })
 
 });
+
+//complete chapter
+router.post('/completechapter', function (req , res) {
+
+  //let firstname;
+  let userid = req.body.userid;
+  let courseid = req.body.courseid;
+  //let complete = 1;
+
+  let record = {
+    UserID : userid,
+    VideoComplete : 1,
+    CourseComplete : 0,
+    QuizComplete : 0,
+    course_id : courseid
+  };
+
+  mysql.query('REPLACE INTO CourseCompletionAustin(UserID,VideoComplete,CourseComplete,QuizComplete,course_id) VALUES(?,?,?,?,?)',[userid,1,0,0,courseid], function(error, results, fields) {
+    if (error) throw error;
+    console.log(results.insertId);
+  });
+  //'REPLACE INTO CourseCompletion SET UserID = ?, VideoComplete = ?, CourseComplete = ?, QuizComplete = ?, course_id = ? WHERE UserID = ? AND course_id = ?', [userid,1,0,0,courseid,userid,courseid]
+  
+
+});
+
 
 //change password
 router.put('/changepassword', function (req , res) {
@@ -1457,15 +1483,21 @@ router.get('/getChapterName', function (req, res) {
 });
 
 router.post('/getProgress', function (req, res) {
-  let postData = req.body
-  let addSql = 'select * FROM courseEnrollData WHERE user_id = ? AND course_id = ?'
-  let addSqlParams = [postData.user_id, postData.course_id];
+  //let postData = req.params;
+  let id = req.body.user_id;
+  let course = req.body.course_id;
+  let addSql = "SELECT * FROM courseEnrollData WHERE user_id = ? AND course_id = ?"
+  let addSqlParams = [id, course];
+  //console.log(postData);
   mysql.query(addSql, addSqlParams, function (err, result) {
-      if (err) {
-          res.send(err)
-          return;
-      }
-      return res.send(result)
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(result) {
+      res.status(200).send(result);
+    }
   });
 });
 
@@ -1504,4 +1536,6 @@ router.post('/chapterCompletion', function (req , res) {
 });
 
 module.exports = router;
+
+
 
