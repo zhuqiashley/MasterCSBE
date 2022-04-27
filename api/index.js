@@ -356,6 +356,284 @@ router.delete('/announcment/:id', function requestHandler(req,res) {
 
 })
 
+router.post('/announcment/update', function requestHandler(req,res) {
+  mysql.query("UPDATE Announcement SET title = ?, description = ?, posted_on = ?  WHERE id = ? ", [req.body.title, req.body.description, req.body.postedDate, req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+
+})
+
+router.post('/forum/update', function requestHandler(req,res) {
+  mysql.query("UPDATE Forum SET question = ?, comments = ?, posted_on = ?  WHERE id = ? ", [req.body.title, req.body.description, req.body.postedDate, req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      res.status(200).send({message:"success"});
+    }
+  });
+
+})
+
+router.post('/like/announcment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Announcement WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        likedArr.push(req.body.user_id)
+        let likeCount = rows[0].like_count + 1
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Announcement SET likedArr = ?, like_count = ? WHERE id = ?", [likedArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
+router.post('/like/forum', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Forum WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        likedArr.push(req.body.user_id)
+        let likeCount = rows[0].like_count + 1
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Forum SET likedArr = ?, like_count = ? WHERE id = ?", [likedArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
+router.post('/removeLike/forum', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Forum WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        let newArr = []
+        likedArr = likedArr.map((item)=> {
+          if(req.body.user_id != item) {
+            newArr.push(item)
+          }
+        })
+        newArr = newArr.join(",")
+        let likeCount = rows[0].like_count ? rows[0].like_count - 1 : rows[0].like_count
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Forum SET likedArr = ?, like_count = ? WHERE id = ?", [newArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
+router.post('/announcment/comment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Announcement WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.userId ], function (err, result) {
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(result) {
+            let firstName = ''
+            let lastName = ''
+            if(rows[0]) {
+              firstName = result[0].FirstName
+              lastName = result[0].LastName
+            } 
+            let postByName = firstName + ' ' + lastName 
+
+
+            let commentJson = rows[0].commentJson ? rows[0].commentJson : {}
+            commentJson = Object.keys(commentJson).length ? JSON.parse(rows[0].commentJson) : {}
+            commentJson[`${Object.keys(commentJson).length + 1}`] = {
+              comment: req.body.comment,
+              userName: postByName
+            }
+            commentJson = JSON.stringify(commentJson)
+            mysql.query("UPDATE Announcement SET commentJson = ? WHERE id = ?", [commentJson, req.body.id], function (err, rows){
+
+              if(err) {
+                res.status(500).send(err);
+                return;
+              }
+          
+              if(rows) {
+                res.status(200).send({message:"success"});
+              }
+            });
+          }
+      
+        });
+      }
+    }
+  });
+
+})
+
+router.post('/forum/comment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Forum WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.userId ], function (err, result) {
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(result) {
+            let firstName = ''
+            let lastName = ''
+            if(rows[0]) {
+              firstName = result[0].FirstName
+              lastName = result[0].LastName
+            } 
+            let postByName = firstName + ' ' + lastName 
+
+
+            let commentJson = rows[0].commentJson ? rows[0].commentJson : {}
+            commentJson = Object.keys(commentJson).length ? JSON.parse(rows[0].commentJson) : {}
+            commentJson[`${Object.keys(commentJson).length + 1}`] = {
+              comment: req.body.comment,
+              userName: postByName
+            }
+            commentJson = JSON.stringify(commentJson)
+            mysql.query("UPDATE Forum SET commentJson = ? WHERE id = ?", [commentJson, req.body.id], function (err, rows){
+
+              if(err) {
+                res.status(500).send(err);
+                return;
+              }
+          
+              if(rows) {
+                res.status(200).send({message:"success"});
+              }
+            });
+          }
+      
+        });
+      }
+    }
+  });
+
+})
+
+router.post('/removeLike/announcment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Announcement WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        let likedArr = rows[0].likedArr ? rows[0].likedArr.split(",") : []
+        let newArr = []
+        likedArr = likedArr.map((item)=> {
+          if(req.body.user_id != item) {
+            newArr.push(item)
+          }
+        })
+        newArr = newArr.join(",")
+        let likeCount = rows[0].like_count ? rows[0].like_count - 1 : rows[0].like_count
+        likedArr = likedArr.join(",")
+        mysql.query("UPDATE Announcement SET likedArr = ?, like_count = ? WHERE id = ?", [newArr, likeCount, req.body.id], function (err, rows){
+
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(rows) {
+            res.status(200).send({message:"success"});
+          }
+        });
+      }
+    }
+  });
+
+})
+
 // Access User Table
 router.get('/userwithoutid', function (req, res) {
 
@@ -885,7 +1163,6 @@ router.get('/UserEvents', function (req, res) {
 
 //   });
 // })
-
 router.post('/forum/add', async function (req , res) {
   try {
 
@@ -907,6 +1184,7 @@ router.post('/forum/add', async function (req , res) {
           user_id : req.body.user_id,
           //role : req.body.Role,
           question : req.body.title,
+          comments: req.body.description,
           forum_src : req.body.forum_src,
           posted_on: new Date(),
           postByName: postByName,
@@ -926,7 +1204,6 @@ router.post('/forum/add', async function (req , res) {
 
 router.post('/announcment/add', async function (req , res) {
   try {
-    console.log(req)
     //let firstname;
     let userData = ''
     await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
@@ -960,6 +1237,42 @@ router.post('/announcment/add', async function (req , res) {
     })
   } catch (error) {
     console.log(error);
+    return res.status(500).send('internal server error!')
+  }
+
+});
+
+router.post('/addComment', async function (req , res) {
+  try {
+    //let firstname;
+    let userData = ''
+    await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
+      if(err) {
+        return;
+      }
+      if(rows) {
+        let firstName = ''
+        let lastName = ''
+        if(rows[0]) {
+          firstName = rows[0].FirstName
+          lastName = rows[0].LastName
+        } 
+        let postByName = firstName + ' ' + lastName 
+
+        let record = {
+          type : req.body.type,
+          comment: req.body.comment,
+          postId: req.body.postId,
+          userName: postByName
+        };
+      
+        mysql.query('INSERT INTO comments SET ?', record, function(error, results, fields) {
+          if (error) throw error;
+          return res.status(200).send(results);
+        });
+      }
+    })
+  } catch (error) {
     return res.status(500).send('internal server error!')
   }
 
@@ -1168,11 +1481,10 @@ router.get('/getChapterName', function (req, res) {
   });
 });
 
-router.get('/getProgress', function (req, res) {
+router.post('/getProgress', function (req, res) {
   //let postData = req.params;
   let id = req.body.user_id;
   let course = req.body.course_id;
-  console.log(req.body);
   let addSql = "SELECT * FROM courseEnrollData WHERE user_id = ? AND course_id = ?"
   let addSqlParams = [id, course];
   //console.log(postData);
