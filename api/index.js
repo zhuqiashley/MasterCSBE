@@ -1163,7 +1163,6 @@ router.get('/UserEvents', function (req, res) {
 
 //   });
 // })
-
 router.post('/forum/add', async function (req , res) {
   try {
 
@@ -1185,6 +1184,7 @@ router.post('/forum/add', async function (req , res) {
           user_id : req.body.user_id,
           //role : req.body.Role,
           question : req.body.title,
+          comments: req.body.description,
           forum_src : req.body.forum_src,
           posted_on: new Date(),
           postByName: postByName,
@@ -1204,7 +1204,6 @@ router.post('/forum/add', async function (req , res) {
 
 router.post('/announcment/add', async function (req , res) {
   try {
-    console.log(req)
     //let firstname;
     let userData = ''
     await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
@@ -1238,6 +1237,42 @@ router.post('/announcment/add', async function (req , res) {
     })
   } catch (error) {
     console.log(error);
+    return res.status(500).send('internal server error!')
+  }
+
+});
+
+router.post('/addComment', async function (req , res) {
+  try {
+    //let firstname;
+    let userData = ''
+    await mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.user_id ],function (err, rows) {
+      if(err) {
+        return;
+      }
+      if(rows) {
+        let firstName = ''
+        let lastName = ''
+        if(rows[0]) {
+          firstName = rows[0].FirstName
+          lastName = rows[0].LastName
+        } 
+        let postByName = firstName + ' ' + lastName 
+
+        let record = {
+          type : req.body.type,
+          comment: req.body.comment,
+          postId: req.body.postId,
+          userName: postByName
+        };
+      
+        mysql.query('INSERT INTO comments SET ?', record, function(error, results, fields) {
+          if (error) throw error;
+          return res.status(200).send(results);
+        });
+      }
+    })
+  } catch (error) {
     return res.status(500).send('internal server error!')
   }
 
