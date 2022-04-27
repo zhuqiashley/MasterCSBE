@@ -488,6 +488,60 @@ router.post('/removeLike/forum', function requestHandler(req,res) {
 
 })
 
+router.post('/announcment/comment', function requestHandler(req,res) {
+
+  mysql.query("SELECT * FROM Announcement WHERE id = ? ", [req.body.id], function (err, rows){
+
+    if(err) {
+      res.status(500).send(err);
+      return;
+    }
+
+    if(rows) {
+      if(rows[0]) {
+        mysql.query("SELECT FirstName, LastName, username, UserImage, Role FROM User WHERE UserID = ? ", [ req.body.userId ], function (err, result) {
+          if(err) {
+            res.status(500).send(err);
+            return;
+          }
+      
+          if(result) {
+            let firstName = ''
+            let lastName = ''
+            if(rows[0]) {
+              firstName = result[0].FirstName
+              lastName = result[0].LastName
+            } 
+            let postByName = firstName + ' ' + lastName 
+
+
+            let commentJson = rows[0].commentJson ? rows[0].commentJson : {}
+            commentJson = Object.keys(commentJson).length ? JSON.parse(rows[0].commentJson) : {}
+            commentJson[`${Object.keys(commentJson).length + 1}`] = {
+              comment: req.body.comment,
+              userName: postByName
+            }
+            commentJson = JSON.stringify(commentJson)
+            mysql.query("UPDATE Announcement SET commentJson = ? WHERE id = ?", [commentJson, req.body.id], function (err, rows){
+
+              if(err) {
+                res.status(500).send(err);
+                return;
+              }
+          
+              if(rows) {
+                res.status(200).send({message:"success"});
+              }
+            });
+          }
+      
+        });
+      }
+    }
+  });
+
+})
+
 // Access User Table
 router.get('/userwithoutid', function (req, res) {
 
