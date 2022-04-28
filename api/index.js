@@ -493,7 +493,7 @@ router.get('/introresult/:id', function (req, res) {
 router.get('/coursecompletionwithid/:id', function (req, res) {
   const id = req.params.id;
   
-  mysql.query("SELECT * FROM CourseCompletion WHERE UserID = ? ", [ id ], function (err, rows) {
+  mysql.query("SELECT * FROM CourseCompletionAustin WHERE UserID = ? ", [ id ], function (err, rows) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -598,6 +598,32 @@ router.put('/useredit', function (req , res) {
   })
 
 });
+
+//complete chapter
+router.post('/completechapter', function (req , res) {
+
+  //let firstname;
+  let userid = req.body.userid;
+  let courseid = req.body.courseid;
+  //let complete = 1;
+
+  let record = {
+    UserID : userid,
+    VideoComplete : 1,
+    CourseComplete : 0,
+    QuizComplete : 0,
+    course_id : courseid
+  };
+
+  mysql.query('REPLACE INTO CourseCompletionAustin(UserID,VideoComplete,CourseComplete,QuizComplete,course_id) VALUES(?,?,?,?,?)',[userid,1,0,0,courseid], function(error, results, fields) {
+    if (error) throw error;
+    console.log(results.insertId);
+  });
+  //'REPLACE INTO CourseCompletion SET UserID = ?, VideoComplete = ?, CourseComplete = ?, QuizComplete = ?, course_id = ? WHERE UserID = ? AND course_id = ?', [userid,1,0,0,courseid,userid,courseid]
+
+
+});
+
 
 //change password
 router.put('/changepassword', function (req , res) {
