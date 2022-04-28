@@ -8,66 +8,87 @@ var mysql = require('../config/config');
 
 router.use(express.json());
 
-// Access Events Table
-router.get('/event', function (req, res) {
-    // res.status(200).send({"Success": "Base API"});
-    const today = new Date();
-    mysql.query("SELECT * FROM Event ORDER BY EventDate DESC", async function (err, rows) {
-        if(err) {
+function log(UserID, LogType, LogLevel, LogMessage) {
+  mysql.query("INSERT INTO Log (UserID, LogType, LogLevel, LogMessage) VALUES (?, ?, ?, ?)", [UserID, LogType, LogLevel, JSON.stringify(LogMessage)], function (err, result) {
+
+      if (err) {
+          console.log(`Error while logging: ${err}`);
+      }
+  });
+}
+
+// Accs Logs Table
+router.get('/logs', function (req, res) {
+  mysql.query("SELECT LogID, LogType, LogLevel, LogMessage, LogDate, FirstName, LastName, Role, username FROM Log LEFt JOIN User ON Log.UserID = User.UserID ORDER BY LogID DESC", function (err, result) {
+      if (err) {
           res.status(500).send(err);
           return;
-        }
-  
-      mysql.query("SELECT EventID, Tag FROM EventTag", function (err, tags) {
+      }
+      
+      res.status(200).send(result);
+  });
+});
+
+// Access Events Table
+router.get('/event', function (req, res) {
+  // res.status(200).send({"Success": "Base API"});
+  const today = new Date();
+  mysql.query("SELECT * FROM Event ORDER BY EventDate DESC", async function (err, rows) {
+      if(err) {
+        res.status(500).send(err);
+        return;
+      }
+
+    mysql.query("SELECT EventID, Tag FROM EventTag", function (err, tags) {
+      if(err) {
+          res.status(500).send(err);
+          return;
+      }
+
+      mysql.query("SELECT UserEvents.UserID, EventID, User.FirstName, User.LastName FROM UserEvents LEFT JOIN User ON User.UserID = UserEvents.UserID", function (err, users) {
         if(err) {
             res.status(500).send(err);
             return;
         }
-  
-        mysql.query("SELECT UserEvents.UserID, EventID, User.FirstName, User.LastName FROM UserEvents LEFT JOIN User ON User.UserID = UserEvents.UserID", function (err, users) {
-          if(err) {
-              res.status(500).send(err);
-              return;
+        
+        if(rows) {
+          // Return Upcoming Events and Past Events based on EventDate
+          const upcomingEvents = [];
+          const pastEvents = [];
+
+          for(let i = 0; i < rows.length; i++) {
+            rows[i].EventTags = tags.filter(tag => tag.EventID === rows[i].EventID);
+            rows[i].Attendees = users.filter(user => user.EventID === rows[i].EventID);
+
+            if(rows[i].EventDate > today) {
+              upcomingEvents.push(rows[i]);
+            }
+            else {
+              pastEvents.push(rows[i]);
+            }
+          }
+
+          // Order Upcoming Events by EventDate nearest to current date
+          upcomingEvents.sort(function(a, b) {
+            return new Date(a.EventDate) - new Date(b.EventDate);
+          });
+
+          // Count total per tag
+          const tagCount = {};
+          for(let i = 0; i < tags.length; i++) {
+            if(!tagCount[tags[i].Tag]) {
+              tagCount[tags[i].Tag] = 1;
+            }
+            else {
+              tagCount[tags[i].Tag]++;
+            }
           }
           
-          if(rows) {
-            // Return Upcoming Events and Past Events based on EventDate
-            const upcomingEvents = [];
-            const pastEvents = [];
-  
-            for(let i = 0; i < rows.length; i++) {
-              rows[i].EventTags = tags.filter(tag => tag.EventID === rows[i].EventID);
-              rows[i].Attendees = users.filter(user => user.EventID === rows[i].EventID);
-  
-              if(rows[i].EventDate > today) {
-                upcomingEvents.push(rows[i]);
-              }
-              else {
-                pastEvents.push(rows[i]);
-              }
-            }
-  
-            // Order Upcoming Events by EventDate nearest to current date
-            upcomingEvents.sort(function(a, b) {
-              return new Date(a.EventDate) - new Date(b.EventDate);
-            });
-  
-            // Count total per tag
-            const tagCount = {};
-            for(let i = 0; i < tags.length; i++) {
-              if(!tagCount[tags[i].Tag]) {
-                tagCount[tags[i].Tag] = 1;
-              }
-              else {
-                tagCount[tags[i].Tag]++;
-              }
-            }
-            
-            res.status(200).send({"upcomingEvents": upcomingEvents, "pastEvents": pastEvents});
-          }
-        });
+          res.status(200).send({"upcomingEvents": upcomingEvents, "pastEvents": pastEvents});
+        }
       });
     });
+  });
 });
 
 router.get('/getcourses/:Course', function (req, res) {
@@ -170,17 +191,17 @@ router.get('/getUserEnrolledCourses/:userId', function (req, res) {
 
 
 // Post to Event
-router.post('/event', function requestHandler(req,res) {
-  mysql.query("INSERT INTO Event (EventTitle, EventDescription, EventInstructor, EventSpots, EventDate) VALUES (?,?,?,?,?)", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots, req.body.EventDate ], function (err, rows, fields) {
+router.post('/event', function requestHandler(req, res) {
+  mysql.query("INSERT INTO Event (EventTitle, EventDescription, EventInstructor, EventSpots, EventDate) VALUES (?,?,?,?,?)", [req.body.Event.EventTitle, req.body.Event.EventDescription, req.body.Event.EventInstructor, req.body.Event.EventSpots, req.body.Event.EventDate ], function (err, rows, fields) {
     if(err) {
       res.status(500).send(err);
       return;
     }
 
-    if (rows){
+    if (rows) {
       const EventID = rows.insertId;
       // Add Tags to Tags Table
-      var tags = req.body.EventTags;
+      var tags = req.body.Event.EventTags;
       for(var i = 0; i < tags.length; i++) {
         mysql.query("INSERT INTO EventTag (Tag, EventID) VALUES (?, ?)", [tags[i], EventID], function (err, rows, fields) {
           if(err) {
@@ -191,6 +212,7 @@ router.post('/event', function requestHandler(req,res) {
       }
 
       if(rows) {
+        log(req.body.User, "CreateEvent", "Info", req.body.Event);
         res.status(200).send(rows);
       }
     }
@@ -230,7 +252,7 @@ router.delete('/event/register/:eventid/:userid', function requestHandler(req, r
 
 // Update Event
 router.put('/event/:id', function requestHandler(req,res) {
-  mysql.query("UPDATE Event SET EventTitle = ?, EventDescription = ?, EventInstructor = ?, EventSpots = ?, EventDate = ? WHERE EventID = ?", [req.body.EventTitle, req.body.EventDescription, req.body.EventInstructor, req.body.EventSpots, req.body.EventDate, req.params.id ], function (err, rows, fields) {
+  mysql.query("UPDATE Event SET EventTitle = ?, EventDescription = ?, EventInstructor = ?, EventSpots = ?, EventDate = ? WHERE EventID = ?", [req.body.Event.EventTitle, req.body.Event.EventDescription, req.body.Event.EventInstructor, req.body.Event.EventSpots, req.body.Event.EventDate, req.params.id ], function (err, rows, fields) {
     if(err) {
       res.status(500).send(err);
       return;
@@ -244,7 +266,7 @@ router.put('/event/:id', function requestHandler(req,res) {
       }
 
       // Add tags to event
-      var tags = req.body.EventTags;
+      var tags = req.body.Event.EventTags;
       for(var i = 0; i < tags.length; i++) {
         mysql.query("INSERT INTO EventTag (Tag, EventID) VALUES (?, ?)", [tags[i], req.params.id], function (err, rows, fields) {
           if(err) {
@@ -255,6 +277,7 @@ router.put('/event/:id', function requestHandler(req,res) {
       }
 
       if(rows) {
+        log(req.body.User, "UpdateEvent", "Info", req.body.Event);
         res.status(200).send(rows);
       }
     });
