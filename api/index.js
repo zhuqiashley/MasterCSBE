@@ -1004,6 +1004,7 @@ router.get('/getAnnouncments/:courseID', function (req, res) {
 
 });
 
+// Access ChapterInfo by CourseID
 router.get('/ChapterInfo', function (req, res) {
   mysql.query("SELECT * FROM ChapterInfo WHERE CourseID = " + req.query.CourseID, function (err, rows) {
       if (err) {
@@ -1015,6 +1016,7 @@ router.get('/ChapterInfo', function (req, res) {
   });
 });
 
+// Access CourseQuizzes table 
 router.get('/CourseQuizzes', function (req, res) {
   mysql.query("SELECT * FROM CourseQuizzes", function (err, rows) {
       if (err) {
@@ -1026,6 +1028,7 @@ router.get('/CourseQuizzes', function (req, res) {
   });
 });
 
+// Access QuizAnswers table
 router.get('/QuizAnswers', function (req, res) {
   mysql.query("SELECT * FROM QuizAnswers", function (err, rows) {
       if (err) {
@@ -1037,6 +1040,7 @@ router.get('/QuizAnswers', function (req, res) {
   });
 });
 
+// Access QuizScores table
 router.get('/QuizScores', function (req, res) {
   mysql.query("SELECT * FROM QuizScores", function (err, rows) {
       if (err) {
@@ -1047,6 +1051,8 @@ router.get('/QuizScores', function (req, res) {
       }
   });
 });
+
+// Access IntroQuiz table
 router.get('/IntroQuiz', function (req, res) {
   mysql.query("SELECT * FROM IntroQuiz", function (err, rows) {
       if (err) {
@@ -1058,6 +1064,7 @@ router.get('/IntroQuiz', function (req, res) {
   });
 });
 
+// Access IntroQuizResult table
 router.get('/IntroQuizResult', function (req, res) {
   mysql.query("SELECT * FROM IntroQuizResult", function (err, rows) {
       if (err) {
@@ -1069,6 +1076,7 @@ router.get('/IntroQuizResult', function (req, res) {
   });
 });
 
+// Update Intro quiz result
 router.get('/updateIntroQuizResult', function (req, res) {
   let params = req.query
   let addSql = 'REPLACE INTO IntroQuizResult(UserID,TypeOfLearner,CourseRecommended) VALUES(?,?,?)'
@@ -1082,6 +1090,7 @@ router.get('/updateIntroQuizResult', function (req, res) {
   });
 });
 
+// Get course quizzes by CourseID and ChapterID
 router.get('/getCourseQuizzes', function (req, res) {
   let params = req.query
   let Sql = 'SELECT * FROM CourseQuizzes WHERE CourseID = ' + params.CourseID + ' AND ChapterID = ' + params.ChapterID
@@ -1094,6 +1103,7 @@ router.get('/getCourseQuizzes', function (req, res) {
   });
 });
 
+// Update quiz score
 router.get('/updateQuizScores', function (req, res) {
   let params = req.query
   let addSql = 'REPLACE INTO QuizScores(UserID,ChapterID,Score) VALUES(?,?,?)'
@@ -1107,6 +1117,7 @@ router.get('/updateQuizScores', function (req, res) {
   });
 });
 
+// Get Scores table by CourseID
 router.get('/Scores', function (req, res) {
   let params = req.query
   let addSql = 'SELECT ChapterID FROM ChapterInfo WHERE CourseID = ' + params.CourseID
@@ -1133,6 +1144,7 @@ router.get('/Scores', function (req, res) {
   });
 });
 
+// Submit feedback
 router.get('/submitFeedback', function (req, res) {
   let params = req.query
   let addSql = 'INSERT INTO Feedback(CourseID,Content) VALUES(?,?)'
@@ -1146,6 +1158,8 @@ router.get('/submitFeedback', function (req, res) {
   });
 });
 
+
+// Get quiz reference by ChapterID from ChapterInfo table
 router.get('/getReference', function (req, res) {
   let params = req.query
   let addSql = 'SELECT ReferenceLink FROM ChapterInfo WHERE CourseID = ? AND ChapterID = ?'
@@ -1161,6 +1175,7 @@ router.get('/getReference', function (req, res) {
   });
 });
 
+// Get quiz chapter video by ModuleID from Module table
 router.get('/getVideo', function (req, res) {
   let params = req.query
   let addSql = 'SELECT ModuleVideo FROM Module WHERE CourseID = ? AND ModuleID = ?'
@@ -1176,6 +1191,7 @@ router.get('/getVideo', function (req, res) {
   });
 });
 
+// Get chapter name for quiz from ChapterInfo table
 router.get('/getChapterName', function (req, res) {
   let params = req.query
   let addSql = 'SELECT ChapterName FROM ChapterInfo WHERE ChapterID = ?'
